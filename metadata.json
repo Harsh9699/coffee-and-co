@@ -1,0 +1,6 @@
+{
+  "name": "Coffee & Co. Sweet Theme",
+  "description": "A sweet, chocolaty coffee shop website designed with elegant typography, rich brown colors, and a prepared stage for 3D scroll animations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
