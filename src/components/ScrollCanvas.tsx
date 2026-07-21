@@ -13,12 +13,45 @@ export default function ScrollCanvas() {
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const frameIndexRef = useRef(1);
 
-  // Preload images
+  // Preload first few frames immediately, then lazy load the rest
   useEffect(() => {
-    for (let i = 1; i <= FRAME_COUNT; i++) {
+    const initialLoad = 10;
+    
+    // 1. Load initial frames fast
+    for (let i = 1; i <= initialLoad; i++) {
       const img = new Image();
       img.src = currentFrame(i);
-      imagesRef.current.push(img);
+      imagesRef.current[i - 1] = img;
+    }
+
+    // 2. Load the rest in the background without freezing the browser
+    let currentIndex = initialLoad + 1;
+    
+    const loadNextBatch = () => {
+      if (currentIndex > FRAME_COUNT) return;
+      
+      const batchSize = 10;
+      const end = Math.min(currentIndex + batchSize, FRAME_COUNT + 1);
+      
+      for (let i = currentIndex; i < end; i++) {
+        const img = new Image();
+        img.src = currentFrame(i);
+        imagesRef.current[i - 1] = img;
+      }
+      
+      currentIndex = end;
+      
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(loadNextBatch);
+      } else {
+        setTimeout(loadNextBatch, 50);
+      }
+    };
+
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(loadNextBatch);
+    } else {
+      setTimeout(loadNextBatch, 200);
     }
   }, []);
 

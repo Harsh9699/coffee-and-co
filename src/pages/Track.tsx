@@ -38,8 +38,8 @@ export default function Track() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF6F0] font-outfit text-[#4A2C2A] flex flex-col items-center justify-center p-6">
-      <Link to="/" className="absolute top-8 left-8 flex items-center gap-2 font-bold text-[#8C6246] hover:text-[#4A2C2A] transition-colors">
+    <div className="min-h-screen bg-[#FAF6F0] font-outfit text-[#4A2C2A] flex flex-col items-center justify-start md:justify-center pt-24 md:pt-6 p-6">
+      <Link to="/" className="absolute top-6 left-6 md:top-8 md:left-8 flex items-center gap-2 font-bold text-[#8C6246] hover:text-[#4A2C2A] transition-colors">
         <ArrowLeft size={20} /> Back to Store
       </Link>
 
