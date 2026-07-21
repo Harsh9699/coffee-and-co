@@ -289,7 +289,8 @@ export default function Store() {
                   <motion.img 
                     src={item.image} 
                     alt={item.name}
-                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover"
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.4 }}
                   />
