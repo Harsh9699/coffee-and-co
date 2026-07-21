@@ -59,6 +59,7 @@ export default function Store() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [trackingId, setTrackingId] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -152,11 +153,36 @@ export default function Store() {
           <button onClick={() => openCheckout()} className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center hover:scale-105 transition-transform text-[#4A2C2A]">
             <ShoppingBag size={18} strokeWidth={2.5} />
           </button>
-          <button className="md:hidden w-10 h-10 flex items-center justify-center text-[#4A2C2A]">
+          <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden w-10 h-10 flex items-center justify-center text-[#4A2C2A]">
             <Menu size={24} />
           </button>
         </div>
       </nav>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-0 z-50 bg-[#FAF6F0] flex flex-col items-center justify-center"
+          >
+            <button 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="absolute top-6 right-6 w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#4A2C2A] shadow-sm"
+            >
+              <X size={24} />
+            </button>
+            <div className="flex flex-col items-center gap-8 text-2xl font-black tracking-tight text-[#4A2C2A]">
+              <a href="#" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-[#8C6246]">MENU</a>
+              <a href="#" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-[#8C6246]">STORY</a>
+              <Link to="/track" className="hover:text-[#8C6246]">TRACK ORDER</Link>
+            </div>
+            <Coffee className="absolute bottom-12 w-40 h-40 text-[#4A2C2A]/5 pointer-events-none" />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Hero Stage */}
       <section className="relative h-[600vh] bg-[#FAF6F0]">
