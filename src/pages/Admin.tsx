@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Lock, Settings, Check, X, LogOut, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 export default function Admin() {
   const [pin, setPin] = useState("");
@@ -16,16 +17,14 @@ export default function Admin() {
     setError("");
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "";
-      // Test the PIN by fetching orders
-      const res = await fetch(`${API_URL}/api/admin/orders`, {
-        headers: { 'Authorization': pin }
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data);
-        setIsAuthenticated(true);
+      // In a real app we'd authenticate against Supabase auth. 
+      // For now, if the PIN is "1234", we let them in.
+      if (pin === "1234") {
+        const { data } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+        if (data) {
+          setOrders(data);
+          setIsAuthenticated(true);
+        }
       } else {
         setError("Invalid PIN");
       }
@@ -38,11 +37,8 @@ export default function Admin() {
 
   const fetchOrders = async () => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "";
-      const res = await fetch(`${API_URL}/api/admin/orders`, {
-        headers: { 'Authorization': pin }
-      });
-      if (res.ok) setOrders(await res.json());
+      const { data } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+      if (data) setOrders(data);
     } catch (err) {
       console.error(err);
     }
@@ -50,16 +46,12 @@ export default function Admin() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "";
-      const res = await fetch(`${API_URL}/api/admin/orders/${id}`, {
-        method: 'PUT',
-        headers: { 
-          'Authorization': pin,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status })
-      });
-      if (res.ok) {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status })
+        .eq('id', id);
+        
+      if (!error) {
         fetchOrders();
       }
     } catch (err) {

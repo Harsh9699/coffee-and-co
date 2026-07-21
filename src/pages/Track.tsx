@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Coffee, Search, CheckCircle2, Clock, XCircle, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 export default function Track() {
   const [trackingId, setTrackingId] = useState("");
@@ -18,14 +19,16 @@ export default function Track() {
     setStatus(null);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "";
-      const res = await fetch(`${API_URL}/api/orders/${trackingId}`);
-      const data = await res.json();
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', trackingId)
+        .single();
 
-      if (res.ok) {
+      if (data) {
         setStatus(data);
       } else {
-        setError(data.error || "Order not found");
+        setError("Order not found or invalid Tracking ID.");
       }
     } catch (err) {
       setError("Failed to fetch order status. Is the server running?");

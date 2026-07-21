@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingBag, Menu, ArrowRight, Coffee, Droplets, Leaf, X, MapPin, Phone, Mail, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ScrollCanvas from '../components/ScrollCanvas';
+import { supabase } from '../lib/supabase';
 
 const PRODUCTS = [
   {
@@ -87,25 +88,22 @@ export default function Store() {
     const dataObj = Object.fromEntries(formData.entries());
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "";
-      const response = await fetch(`${API_URL}/api/orders`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          name: dataObj.name,
-          email: dataObj.email,
-          address: dataObj.address,
-          product: dataObj.Product
-        })
-      });
+      const newTrackingId = `ORD-${Math.floor(Math.random() * 90000) + 10000}`;
       
-      const data = await response.json();
-      if (data.success) {
-        setTrackingId(data.trackingId);
+      const { error } = await supabase.from('orders').insert([{
+        id: newTrackingId,
+        name: dataObj.name,
+        email: dataObj.email,
+        address: dataObj.address,
+        product: dataObj.Product,
+        status: 'Pending'
+      }]);
+      
+      if (!error) {
+        setTrackingId(newTrackingId);
         setIsSuccess(true);
       } else {
+        console.error(error);
         alert("Something went wrong! Please try again.");
       }
     } catch (error) {
