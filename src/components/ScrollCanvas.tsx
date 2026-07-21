@@ -18,6 +18,12 @@ export default function ScrollCanvas() {
     const video = videoRef.current;
     if (!video) return;
 
+    if (isMobile) {
+      // On mobile, just autoplay in a loop. No GSAP scrubbing!
+      video.play().catch(e => console.log("Autoplay prevented:", e));
+      return;
+    }
+
     // Force video to load first frame
     video.load();
 
@@ -48,7 +54,7 @@ export default function ScrollCanvas() {
   }, { scope: containerRef });
 
   return (
-    <div ref={containerRef} className="absolute inset-0 w-full h-[600vh] z-0">
+    <div ref={containerRef} className={`absolute inset-0 w-full ${isMobile ? 'h-full' : 'h-[600vh]'} z-0`}>
       <div className="sticky top-0 w-full h-screen overflow-hidden bg-[#FAF6F0]">
         <video 
           ref={videoRef}
@@ -57,6 +63,8 @@ export default function ScrollCanvas() {
           preload="auto"
           muted
           playsInline
+          loop={isMobile}
+          autoPlay={isMobile}
         />
       </div>
     </div>

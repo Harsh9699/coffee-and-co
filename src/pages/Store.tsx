@@ -221,7 +221,7 @@ export default function Store() {
       </AnimatePresence>
 
       {/* Hero Stage */}
-      <section className="relative h-[600vh] bg-[#FAF6F0]">
+      <section className="relative h-[100vh] md:h-[600vh] bg-[#FAF6F0]">
         <ScrollCanvas />
         <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center overflow-hidden">
           <div className="absolute top-1/4 -left-32 md:left-1/4 w-[30rem] h-[30rem] bg-[#D4A373]/15 rounded-full blur-[100px] pointer-events-none" />
