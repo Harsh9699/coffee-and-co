@@ -53,13 +53,36 @@ const FEATURES = [
 export default function Store() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  
+  // Cart & Mobile State
+  const [cart, setCart] = useState<any[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Form State
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [trackingId, setTrackingId] = useState("");
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const cartTotal = cart.reduce((total, item) => {
+    const price = parseInt(item.price.replace('₹', ''));
+    return total + (price * item.quantity);
+  }, 0);
+
+  const addToCart = (product: any) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.id === product.id);
+      if (existing) {
+        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+      }
+      return [...prev, { ...product, quantity: 1 }];
+    });
+    setIsCartOpen(true);
+  };
+
+  const removeFromCart = (id: number) => {
+    setCart(prev => prev.filter(item => item.id !== id));
+  };
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -67,9 +90,9 @@ export default function Store() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const openCheckout = (product: any = null) => {
-    setSelectedProduct(product);
+  const openCheckout = () => {
     setIsSuccess(false);
+    setIsCartOpen(false);
     setIsCheckoutOpen(true);
   };
 
@@ -77,7 +100,6 @@ export default function Store() {
     setIsCheckoutOpen(false);
     setTimeout(() => {
       setIsSuccess(false);
-      setSelectedProduct(null);
     }, 300);
   };
 
@@ -91,18 +113,25 @@ export default function Store() {
     try {
       const newTrackingId = `ORD-${Math.floor(Math.random() * 90000) + 10000}`;
       
+      const orderSummary = cart.map(item => `${item.quantity}x ${item.name}`).join(', ');
+      
       const { error } = await supabase.from('orders').insert([{
         id: newTrackingId,
         name: dataObj.name,
         email: dataObj.email,
         address: dataObj.address,
-        product: dataObj.Product,
+        product: orderSummary,
         status: 'Pending'
       }]);
       
       if (!error) {
+        // Save to localStorage for My Orders history
+        const existingOrders = JSON.parse(localStorage.getItem('coffee_orders') || '[]');
+        localStorage.setItem('coffee_orders', JSON.stringify([newTrackingId, ...existingOrders]));
+
         setTrackingId(newTrackingId);
         setIsSuccess(true);
+        setCart([]); // Clear cart
       } else {
         console.error(error);
         alert("Something went wrong! Please try again.");
@@ -146,12 +175,18 @@ export default function Store() {
         <div className="hidden md:flex items-center gap-8 font-semibold text-sm tracking-wide">
           <a href="#" className="hover:text-[#8C6246] transition-colors">MENU</a>
           <a href="#" className="hover:text-[#8C6246] transition-colors">STORY</a>
+          <Link to="/my-orders" className="hover:text-[#8C6246] transition-colors">MY ORDERS</Link>
           <Link to="/track" className="hover:text-[#8C6246] transition-colors">TRACK ORDER</Link>
         </div>
 
         <div className="flex items-center gap-4">
-          <button onClick={() => openCheckout()} className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center hover:scale-105 transition-transform text-[#4A2C2A]">
+          <button onClick={() => setIsCartOpen(true)} className="relative w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center hover:scale-105 transition-transform text-[#4A2C2A]">
             <ShoppingBag size={18} strokeWidth={2.5} />
+            {cart.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#8C6246] text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
+                {cart.reduce((total, item) => total + item.quantity, 0)}
+              </span>
+            )}
           </button>
           <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden w-10 h-10 flex items-center justify-center text-[#4A2C2A]">
             <Menu size={24} />
@@ -177,6 +212,7 @@ export default function Store() {
             <div className="flex flex-col items-center gap-8 text-2xl font-black tracking-tight text-[#4A2C2A]">
               <a href="#" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-[#8C6246]">MENU</a>
               <a href="#" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-[#8C6246]">STORY</a>
+              <Link to="/my-orders" className="hover:text-[#8C6246]">MY ORDERS</Link>
               <Link to="/track" className="hover:text-[#8C6246]">TRACK ORDER</Link>
             </div>
             <Coffee className="absolute bottom-12 w-40 h-40 text-[#4A2C2A]/5 pointer-events-none" />
@@ -243,7 +279,7 @@ export default function Store() {
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: index * 0.15 }}
                 whileHover={{ y: -10 }}
-                onClick={() => openCheckout(item)}
+                onClick={() => addToCart(item)}
                 className="bg-[#FAF6F0] rounded-[2.5rem] p-6 flex flex-col gap-6 shadow-sm hover:shadow-[0_20px_40px_rgba(74,44,42,0.08)] transition-all cursor-pointer group"
               >
                 <div className="w-full aspect-[4/5] rounded-[2rem] relative overflow-hidden shadow-inner group-hover:shadow-xl transition-shadow">
@@ -369,6 +405,76 @@ export default function Store() {
         </div>
       </footer>
 
+      {/* Cart Side Drawer */}
+      <AnimatePresence>
+        {isCartOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm"
+            onClick={() => setIsCartOpen(false)}
+          >
+            <motion.div 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-[#4A2C2A]/10">
+                <h3 className="text-2xl font-black text-[#4A2C2A] flex items-center gap-2">
+                  <ShoppingBag size={24} /> Your Cart
+                </h3>
+                <button 
+                  onClick={() => setIsCartOpen(false)}
+                  className="w-10 h-10 bg-[#FAF6F0] text-[#4A2C2A] rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
+                {cart.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-[#8C6246]">
+                    <Coffee size={48} className="mb-4 opacity-50" />
+                    <p className="font-bold text-lg">Your cart is empty!</p>
+                  </div>
+                ) : (
+                  cart.map(item => (
+                    <div key={item.id} className="flex justify-between items-center bg-[#FAF6F0] p-4 rounded-2xl border border-[#8C6246]/10">
+                      <div>
+                        <h4 className="font-bold text-[#4A2C2A] text-lg">{item.name}</h4>
+                        <p className="text-[#8C6246] font-medium">{item.price} x {item.quantity}</p>
+                      </div>
+                      <button onClick={() => removeFromCart(item.id)} className="text-red-400 hover:text-red-600 p-2">
+                        <X size={20} />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {cart.length > 0 && (
+                <div className="p-6 border-t border-[#4A2C2A]/10 bg-white">
+                  <div className="flex justify-between items-center mb-6">
+                    <span className="text-[#8C6246] font-bold text-lg">Total</span>
+                    <span className="text-3xl font-black text-[#4A2C2A]">₹{cartTotal}</span>
+                  </div>
+                  <button 
+                    onClick={openCheckout}
+                    className="w-full bg-[#4A2C2A] text-white py-4 rounded-2xl font-bold hover:bg-[#2D1A19] transition-colors shadow-lg flex items-center justify-center gap-2"
+                  >
+                    Proceed to Checkout <ArrowRight size={18} />
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Checkout Modal */}
       <AnimatePresence>
         {isCheckoutOpen && (
@@ -415,16 +521,10 @@ export default function Store() {
                 <>
                   <div className="mb-8 pr-12">
                     <h3 className="text-3xl font-black text-[#4A2C2A] tracking-tight mb-2">Complete Order</h3>
-                    {selectedProduct ? (
-                      <p className="text-[#8C6246] font-medium">Ordering: <strong className="text-[#4A2C2A]">{selectedProduct.name}</strong></p>
-                    ) : (
-                      <p className="text-[#8C6246] font-medium">Fill in your details to process your order.</p>
-                    )}
+                    <p className="text-[#8C6246] font-medium">Ordering <strong className="text-[#4A2C2A]">{cart.reduce((total, item) => total + item.quantity, 0)} items</strong> (Total: ₹{cartTotal})</p>
                   </div>
 
                   <form onSubmit={handleOrderSubmit} className="flex flex-col gap-5 relative z-10">
-                    <input type="hidden" name="Product" value={selectedProduct ? selectedProduct.name : "Custom Cart Order"} />
-                    
                     <div>
                       <label className="block text-sm font-bold text-[#4A2C2A] mb-1.5 ml-1">Full Name</label>
                       <input required type="text" name="name" className="w-full bg-[#FAF6F0] border-none rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#8C6246] outline-none text-[#4A2C2A] font-medium placeholder-[#4A2C2A]/30" placeholder="John Doe" />
@@ -445,7 +545,7 @@ export default function Store() {
                       disabled={isSubmitting}
                       className="mt-4 bg-[#4A2C2A] text-white px-8 py-4 rounded-2xl font-bold hover:bg-[#2D1A19] transition-colors w-full shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      {isSubmitting ? "Processing..." : `Place Order ${selectedProduct ? `- ${selectedProduct.price}` : ''}`}
+                      {isSubmitting ? "Processing..." : `Place Order - ₹${cartTotal}`}
                     </button>
                     <p className="text-center text-xs font-medium text-[#4A2C2A]/40 mt-2">
                       Secure encrypted checkout
