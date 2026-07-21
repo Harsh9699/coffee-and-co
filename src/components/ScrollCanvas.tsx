@@ -47,7 +47,7 @@ export default function ScrollCanvas() {
       <div className="sticky top-0 w-full h-screen overflow-hidden bg-[#FAF6F0]">
         <video 
           ref={videoRef}
-          src="/hero-video.mp4"
+          src="/hero-video-scrub.mp4"
           className="w-full h-full object-cover opacity-90"
           preload="auto"
           muted
