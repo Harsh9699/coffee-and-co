@@ -8,17 +8,11 @@ gsap.registerPlugin(ScrollTrigger);
 export default function ScrollCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      // 768px is typical iPad/tablet portrait boundary
-      setIsMobile(window.innerWidth < 768 || /Mobi|Android/i.test(navigator.userAgent));
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  // Initialize synchronously since Vite is purely client-side. 
+  // This prevents the video element from swapping out after GSAP has already bound to it.
+  const [isMobile] = useState(() => 
+    typeof window !== 'undefined' && (window.innerWidth < 768 || /Mobi|Android/i.test(navigator.userAgent))
+  );
 
   useGSAP(() => {
     const video = videoRef.current;
@@ -57,7 +51,6 @@ export default function ScrollCanvas() {
     <div ref={containerRef} className="absolute inset-0 w-full h-[600vh] z-0">
       <div className="sticky top-0 w-full h-screen overflow-hidden bg-[#FAF6F0]">
         <video 
-          key={isMobile ? "mobile" : "desktop"}
           ref={videoRef}
           src={isMobile ? "/hero-video-mobile.mp4" : "/hero-video-scrub.mp4"}
           className="w-full h-full object-cover opacity-90"
