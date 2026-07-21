@@ -18,7 +18,8 @@ export default function Track() {
     setStatus(null);
 
     try {
-      const res = await fetch(`/api/orders/${trackingId}`);
+      const API_URL = import.meta.env.VITE_API_URL || "";
+      const res = await fetch(`${API_URL}/api/orders/${trackingId}`);
       const data = await res.json();
 
       if (res.ok) {

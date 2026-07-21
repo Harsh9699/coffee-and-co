@@ -16,8 +16,9 @@ export default function Admin() {
     setError("");
 
     try {
+      const API_URL = import.meta.env.VITE_API_URL || "";
       // Test the PIN by fetching orders
-      const res = await fetch('/api/admin/orders', {
+      const res = await fetch(`${API_URL}/api/admin/orders`, {
         headers: { 'Authorization': pin }
       });
       
@@ -37,7 +38,8 @@ export default function Admin() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('/api/admin/orders', {
+      const API_URL = import.meta.env.VITE_API_URL || "";
+      const res = await fetch(`${API_URL}/api/admin/orders`, {
         headers: { 'Authorization': pin }
       });
       if (res.ok) setOrders(await res.json());
@@ -48,7 +50,8 @@ export default function Admin() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      const res = await fetch(`/api/admin/orders/${id}`, {
+      const API_URL = import.meta.env.VITE_API_URL || "";
+      const res = await fetch(`${API_URL}/api/admin/orders/${id}`, {
         method: 'PUT',
         headers: { 
           'Authorization': pin,

@@ -87,7 +87,8 @@ export default function Store() {
     const dataObj = Object.fromEntries(formData.entries());
 
     try {
-      const response = await fetch("/api/orders", {
+      const API_URL = import.meta.env.VITE_API_URL || "";
+      const response = await fetch(`${API_URL}/api/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
