@@ -282,17 +282,14 @@ export default function Store() {
                 onClick={() => addToCart(item)}
                 className="bg-[#FAF6F0] rounded-[2.5rem] p-6 flex flex-col gap-6 shadow-sm hover:shadow-[0_20px_40px_rgba(74,44,42,0.08)] transition-all cursor-pointer group"
               >
-                <div className="w-full aspect-[4/5] rounded-[2rem] relative overflow-hidden shadow-inner group-hover:shadow-xl transition-shadow">
+                <div className="w-full relative overflow-hidden shadow-inner group-hover:shadow-xl transition-shadow rounded-[2rem]" style={{ paddingTop: '125%' }}>
                   <div className="absolute top-4 left-4 z-10 bg-white/30 backdrop-blur-md px-4 py-1.5 rounded-full text-white text-xs font-bold uppercase tracking-wider shadow-sm">
                     {item.tag}
                   </div>
-                  <motion.img 
+                  <img 
                     src={item.image} 
                     alt={item.name}
-                    loading="lazy"
-                    className="absolute inset-0 w-full h-full object-cover"
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.4 }}
+                    className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                 </div>
                 
