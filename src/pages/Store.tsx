@@ -11,7 +11,7 @@ const PRODUCTS = [
     name: "Dark Truffle Mocha",
     price: "₹200",
     desc: "Double shot espresso pulled over 70% dark artisan chocolate.",
-    image: "/products/dark_truffle.jpeg",
+    image: "/products/dark_truffle.webp",
     tag: "Bestseller"
   },
   {
@@ -19,7 +19,7 @@ const PRODUCTS = [
     name: "Caramel Cloud Macchiato",
     price: "₹400",
     desc: "Vanilla bean, steamed milk, and a rich, buttery caramel drizzle.",
-    image: "/products/caramel_cloud.jpeg",
+    image: "/products/caramel_cloud.webp",
     tag: "Sweet"
   },
   {
@@ -27,7 +27,7 @@ const PRODUCTS = [
     name: "Hazelnut Praline Latte",
     price: "₹600",
     desc: "Warm roasted hazelnut infused with our signature house blend.",
-    image: "/products/hazelnut_praline.jpeg",
+    image: "/products/hazelnut_praline.webp",
     tag: "Nutty"
   },
 ];
